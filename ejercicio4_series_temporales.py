@@ -39,9 +39,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
+from anejos import color
 
-# Crear carpeta de salida si no existe
-os.makedirs("output", exist_ok=True)
+#Configuración de estilos para gráficos
+plt.style.use('seaborn-v0_8-whitegrid')
 
 
 # =============================================================================
@@ -114,8 +115,15 @@ def visualizar_serie(serie):
     - Añade título, etiquetas de ejes y una cuadrícula suave
     - Guarda con plt.savefig("output/ej4_serie_original.png", dpi=150, bbox_inches='tight')
     """
-    # TODO: Implementa la visualización de la serie
-    pass
+    fig, ax = plt.subplots(figsize=(14, 4))
+    ax.plot(serie.index, serie.values, linewidth=1, color='steelblue')
+    ax.set_title('Serie Temporal Completa (2018-2023)', fontsize=14, fontweight='bold')
+    ax.set_xlabel('Fecha', fontsize=12)
+    ax.set_ylabel('Valor', fontsize=12)
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("output/ej4_serie_original.png", dpi=150, bbox_inches='tight')
+    plt.close()
 
 
 # =============================================================================
@@ -144,11 +152,16 @@ def descomponer_serie(serie):
     - resultado.plot() genera los 4 subgráficos automáticamente
     - Guarda la figura con fig.savefig(...)
     """
-    # TODO: Implementa la descomposición
-    # resultado = seasonal_decompose(...)
-    # fig = resultado.plot()
-    # ...
-    pass
+    from statsmodels.tsa.seasonal import seasonal_decompose
+    resultado = seasonal_decompose(serie, model='additive', period=365)
+    fig = resultado.plot()
+    fig.set_figheight(10)
+    fig.set_figwidth(14)
+    fig.suptitle('Descomposición de la Serie Temporal', fontsize=16, fontweight='bold', y=1.02)
+    plt.tight_layout()
+    plt.savefig("output/ej4_descomposicion.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    return resultado
 
 
 # =============================================================================
@@ -186,31 +199,71 @@ def analizar_residuo(residuo):
     - ACF / PACF:
         from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
     """
-    # TODO: Limpia el residuo (elimina NaN al inicio/fin)
-    residuo_limpio = None  # ← residuo.dropna()
-
-    # TODO: Calcula estadísticos básicos
-    media    = None
-    std      = None
-    asimetria = None
-    curtosis  = None
-
-
-    # TODO: Test de estacionariedad (ADF)
-    # from statsmodels.tsa.stattools import adfuller
-    # resultado_adf = adfuller(residuo_limpio)
-    # p_adf = resultado_adf[1]
-
-    # TODO: Gráfico ACF y PACF del residuo → output/ej4_acf_pacf.png
-    pass
-
-    # TODO: Histograma del residuo con curva normal superpuesta
-    # → output/ej4_histograma_ruido.png
-    # Pista: usa scipy.stats.norm.pdf para la curva teórica
-    pass
-
-    # TODO: Guardar estadísticos en output/ej4_analisis.txt
-    pass
+    from statsmodels.tsa.stattools import adfuller
+    from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+    from scipy.stats import jarque_bera, norm
+    
+    # Limpiar el residuo
+    residuo_limpio = residuo.dropna()
+    
+    # Calcular estadísticos básicos
+    media = residuo_limpio.mean()
+    std = residuo_limpio.std()
+    asimetria = residuo_limpio.skew()
+    curtosis = residuo_limpio.kurtosis()
+    
+    # Test de normalidad Jarque-Bera
+    jb_stat, jb_p = jarque_bera(residuo_limpio)
+    
+    # Test de estacionariedad ADF
+    resultado_adf = adfuller(residuo_limpio)
+    p_adf = resultado_adf[1]
+    
+    # Gráfico ACF y PACF del residuo
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8))
+    plot_acf(residuo_limpio, ax=ax1, lags=50, alpha=0.05)
+    ax1.set_title('ACF del Residuo', fontsize=12, fontweight='bold')
+    plot_pacf(residuo_limpio, ax=ax2, lags=50, alpha=0.05)
+    ax2.set_title('PACF del Residuo', fontsize=12, fontweight='bold')
+    plt.tight_layout()
+    plt.savefig("output/ej4_acf_pacf.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    # Histograma del residuo con curva normal
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.hist(residuo_limpio, bins=50, density=True, alpha=0.7, color='steelblue', edgecolor='black')
+    
+    # Curva normal teórica
+    xmin, xmax = residuo_limpio.min(), residuo_limpio.max()
+    x = np.linspace(xmin, xmax, 100)
+    p = norm.pdf(x, media, std)
+    ax.plot(x, p, 'r-', linewidth=2, label=f'Normal (μ={media:.3f}, σ={std:.3f})')
+    
+    ax.set_title('Histograma del Residuo vs. Distribución Normal', fontsize=14, fontweight='bold')
+    ax.set_xlabel('Valor del Residuo', fontsize=12)
+    ax.set_ylabel('Densidad', fontsize=12)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("output/ej4_histograma_ruido.png", dpi=150, bbox_inches='tight')
+    plt.close()
+    
+    # Guardar estadísticos
+    with open("output/ej4_analisis.txt", "w", encoding='utf-8') as f:
+        f.write("Analisis del Residuo (Ruido)\n")
+        f.write("=" * 50 + "\n\n")
+        f.write("Estadisticos basicos:\n")
+        f.write(f"  Media:     {media:.6f}\n")
+        f.write(f"  Std:       {std:.6f}\n")
+        f.write(f"  Asimetria: {asimetria:.6f}\n")
+        f.write(f"  Curtosis:  {curtosis:.6f}\n\n")
+        f.write("Test de normalidad Jarque-Bera:\n")
+        f.write(f"  Estadistico: {jb_stat:.6f}\n")
+        f.write(f"  p-valor:    {jb_p:.6f}\n")
+        f.write(f"  Conclusion: {'No rechazamos normalidad (p > 0.05)' if jb_p > 0.05 else 'Rechazamos normalidad (p <= 0.05)'}\n\n")
+        f.write("Test de estacionariedad ADF:\n")
+        f.write(f"  p-valor ADF: {p_adf:.6f}\n")
+        f.write(f"  Conclusion: {'La serie es estacionaria (p <= 0.05)' if p_adf <= 0.05 else 'La serie no es estacionaria (p > 0.05)'}\n")
 
 
 # =============================================================================
@@ -220,7 +273,7 @@ def analizar_residuo(residuo):
 if __name__ == "__main__":
 
     print("=" * 55)
-    print("EJERCICIO 4 — Análisis de Series Temporales")
+    print(color.BOLD + color.UNDERLINE + color.PURPLE + "EJERCICIO 4 — Análisis de Series Temporales" + color.END)
     print("=" * 55)
 
     # ------------------------------------------------------------------
@@ -228,8 +281,9 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------
     SEMILLA = 42
     serie = generar_serie_temporal(semilla=SEMILLA)
+    
 
-    print(f"\nSerie generada:")
+    print("\n" + color.CYAN + "Serie generada:" + color.END)
     print(f"  Periodo:      {serie.index[0].date()} → {serie.index[-1].date()}")
     print(f"  Observaciones: {len(serie)}")
     print(f"  Media:         {serie.mean():.2f}")
@@ -239,26 +293,26 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------
     # Paso 2: Visualizar la serie completa
     # ------------------------------------------------------------------
-    print("\n[1/3] Visualizando la serie original...")
+    print("\n" + color.GREEN + "[1/3] Visualizando la serie original..." + color.END)
     visualizar_serie(serie)
 
     # ------------------------------------------------------------------
     # Paso 3: Descomponer
     # ------------------------------------------------------------------
-    print("[2/3] Descomponiendo la serie...")
+    print(color.GREEN + "[2/3] Descomponiendo la serie..." + color.END)
     resultado = descomponer_serie(serie)
 
     # ------------------------------------------------------------------
     # Paso 4: Analizar el residuo
     # ------------------------------------------------------------------
-    print("[3/3] Analizando el residuo...")
+    print(color.GREEN + "[3/3] Analizando el residuo..." + color.END)
     if resultado is not None:
         analizar_residuo(resultado.resid)
 
     # ------------------------------------------------------------------
     # Resumen de salidas esperadas
     # ------------------------------------------------------------------
-    print("\nSalidas esperadas en output/:")
+    print("\n" + color.GREEN + "Salidas esperadas en output/:" + color.END)
     salidas = [
         "ej4_serie_original.png",
         "ej4_descomposicion.png",
@@ -269,6 +323,6 @@ if __name__ == "__main__":
     for s in salidas:
         existe = os.path.exists(f"output/{s}")
         estado = "✓" if existe else "✗ (pendiente)"
-        print(f"  [{estado}] output/{s}")
+        print(color.GREEN + f"[{estado}]" + color.END, f" output/{s}")
 
-    print("\n¡Recuerda completar las respuestas en Respuestas.md!")
+    print("\n" + color.YELLOW + "¡Recuerda completar las respuestas en Respuestas.md!" + color.END)

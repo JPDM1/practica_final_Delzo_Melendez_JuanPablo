@@ -1,5 +1,5 @@
 """
-Añadir color a la terminal
+Añadir color a los prints en la terminal
 """
 class color:
    PURPLE = '\033[95m'

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 #Configuración de estilos para gráficos
-plt.style.use('fivethirtyeight')
+plt.style.use('classic')
 sns.set_theme(style="whitegrid")
 
 #Importar colores para el print

@@ -1,6 +1,7 @@
 MÉTRICAS DE REGRESIÓN LINEAL SIMPLE (TEST SET)
-=============================================
-Atributo predictor: Enginesize
-MAE:  2748.6947
-RMSE: 3932.6148
-R²:   0.8041
+    =============================================
+    Atributo predictor: Enginesize
+    MAE:  2748.6947
+    RMSE: 3932.6148
+    R²:   0.8041
+    

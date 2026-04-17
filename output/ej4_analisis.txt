@@ -1,0 +1,17 @@
+Analisis del Residuo (Ruido)
+==================================================
+
+Estadisticos basicos:
+  Media:     0.127078
+  Std:       3.222043
+  Asimetria: -0.050917
+  Curtosis:  -0.061028
+
+Test de normalidad Jarque-Bera:
+  Estadistico: 1.101349
+  p-valor:    0.576561
+  Conclusion: No rechazamos normalidad (p > 0.05)
+
+Test de estacionariedad ADF:
+  p-valor ADF: 0.000000
+  Conclusion: La serie es estacionaria (p <= 0.05)

@@ -37,10 +37,10 @@ SALIDAS ESPERADAS (carpeta output/)
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from anejos import color
 
-# Crear carpeta de salida si no existe
-os.makedirs("output", exist_ok=True)
-
+#Configuración de estilos para gráficos
+plt.style.use('classic')
 
 # =============================================================================
 # FUNCIÓN PRINCIPAL — COMPLETA ESTA SECCIÓN
@@ -251,11 +251,11 @@ if __name__ == "__main__":
     # Mostrar resultados en consola
     # -------------------------------------------------------------------------
     print("=" * 50)
-    print("RESULTADOS — Regresión Lineal Múltiple (NumPy)")
+    print(color.BOLD + color.UNDERLINE + color.PURPLE + "RESULTADOS — Regresión Lineal Múltiple (NumPy)" + color.END)
     print("=" * 50)
-    print(f"\nCoeficientes reales:   {coefs_reales}")
-    print(f"Coeficientes ajustados: {coefs}")
-    print(f"\nMétricas sobre test set:")
+    print("\n" + color.CYAN + "Coeficientes reales:" + color.END, f"   {coefs_reales}")
+    print(color.CYAN + "Coeficientes ajustados:" + color.END, f" {coefs}")
+    print("\n" + color.CYAN + "Métricas sobre test set:" + color.END)
     print(f"  MAE  = {mae:.4f}")
     print(f"  RMSE = {rmse:.4f}")
     print(f"  R²   = {r2:.4f}")
@@ -295,7 +295,7 @@ if __name__ == "__main__":
     # Gráfico
     graficar_real_vs_predicho(y_test, y_pred)
 
-    print("\nSalidas guardadas en la carpeta output/")
+    print("\n" + color.GREEN + "Salidas guardadas en la carpeta output/" + color.END)
     print("  → output/ej3_coeficientes.txt")
     print("  → output/ej3_metricas.txt")
     print("  → output/ej3_predicciones.png")
